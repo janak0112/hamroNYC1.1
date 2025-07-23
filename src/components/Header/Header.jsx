@@ -14,7 +14,7 @@ function Header() {
     { name: "Room", path: "/rooms" },
     { name: "Market", path: "/markets" },
     { name: "Events", path: "/events" },
-    { name: "Post Your Listing", path: "/create" },
+    { name: "Post Your Listing", path: "/post-listing" },
   ];
 
   // Check login status on mount & when route changes

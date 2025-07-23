@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import listingService from "../../appwrite/config";
-import storageService from "../../appwrite/storage";   // ✅
+import React, { useState, useEffect } from 'react';
+import authService from '../../appwrite/auth'; // Adjust the path to your AuthService file
+import listingService from '../../appwrite/config';
+import storageService from '../../appwrite/storage';
 
 function PostListing() {
   const [title, setTitle] = useState('');
@@ -9,22 +10,55 @@ function PostListing() {
   const [price, setPrice] = useState('');
   const [location, setLocation] = useState('');
   const [contact, setContact] = useState('');
-  const [image, setImage] = useState(null); // file input
+  const [image, setImage] = useState(null);
   const [error, setError] = useState('');
+  const [userId, setUserId] = useState(null); // State to store userId
+
+  // Fetch the current user's ID when the component mounts
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await authService.getCurrentUser();
+        if (user) {
+          setUserId(user.$id); // Store the userId
+        } else {
+          setError('You must be logged in to create a listing.');
+        }
+      } catch (err) {
+        console.error('❌ Error fetching user:', err);
+        setError('You must be logged in to create a listing.');
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!title || !description || !category || !contact) {
-      setError("Please fill in all required fields.");
+    // Check if userId is available
+    if (!userId) {
+      setError('You must be logged in to create a listing.');
       return;
     }
 
-    // 1. Upload the image (if any) and capture its $id
+    // Validate required fields
+    if (!title || !description || !category || !contact) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+
+    // Upload the image (if any) and capture its $id
     let imageId = null;
     if (image) {
-      imageId = await storageService.uploadFile(image);
+      try {
+        const uploadedFile = await storageService.uploadFile(image);
+        imageId = uploadedFile.$id; // Get the file ID
+      } catch (err) {
+        console.error('❌ Error uploading image:', err);
+        setError('Failed to upload image. Please try again.');
+        return;
+      }
     }
 
     try {
@@ -35,17 +69,15 @@ function PostListing() {
         price,
         location,
         contact,
-        imageId, // Handle image upload if needed
+        imageId,
+        userId, // Include userId in the listing data
       };
 
       const response = await listingService.createListing(newListing);
-      alert("✅ Listing created successfully!");
-      console.log("Created listing response:", response);
-    } catch (err) {
-      console.error("❌ Error creating listing:", err);
-      alert("Failed to create listing.");
-      setError("Something went wrong. Please try again.");
-    } finally {
+      alert('✅ Listing created successfully!');
+      console.log('Created listing response:', response);
+
+      // Reset form
       setTitle('');
       setDescription('');
       setCategory('');
@@ -53,6 +85,10 @@ function PostListing() {
       setLocation('');
       setContact('');
       setImage(null);
+    } catch (err) {
+      console.error('❌ Error creating listing:', err);
+      alert('Failed to create listing.');
+      setError('Something went wrong. Please try again.');
     }
   };
 
@@ -137,7 +173,7 @@ function PostListing() {
           <div>
             <label className="block text-sm font-medium mb-1">Contact</label>
             <input
-              type="text"
+              type="tel"
               value={contact}
               onChange={(e) => setContact(e.target.value)}
               placeholder="Your email or phone"
@@ -160,6 +196,7 @@ function PostListing() {
             <button
               type="submit"
               className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md"
+              disabled={!userId} // Disable button if user is not authenticated
             >
               Create Listing
             </button>
@@ -167,7 +204,7 @@ function PostListing() {
               type="button"
               className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md"
               onClick={() => {
-                console.log("Form cancelled.");
+                console.log('Form cancelled.');
                 setTitle('');
                 setDescription('');
                 setCategory('');

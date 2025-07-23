@@ -1,5 +1,5 @@
-import { Client, Databases, ID } from "appwrite";
-import conf from "../conf/conf"; // adjust the path as needed
+import { Client, Databases, ID, Query } from "appwrite"; // Add Query for filtering
+import conf from "../conf/conf";
 
 export class ListingService {
   client = new Client();
@@ -12,8 +12,8 @@ export class ListingService {
     this.databases = new Databases(this.client);
   }
 
-// ✅ Use imageId as string
-async createListing({ title, description, category, price, location, contact, imageId = null }) {
+  // ✅ Create a listing with userId
+  async createListing({ title, description, category, price, location, contact, imageId = null, userId }) {
     try {
       const response = await this.databases.createDocument(
         conf.appWriteDatabaseId,
@@ -26,10 +26,11 @@ async createListing({ title, description, category, price, location, contact, im
           price,
           location,
           contact,
-          imageId, // ✅ must match exactly with DB attribute name
+          imageId,
+          userId, // ✅ Add userId to the document
         }
       );
-  
+
       console.log("✅ Listing created:", response);
       return response;
     } catch (error) {
@@ -38,13 +39,13 @@ async createListing({ title, description, category, price, location, contact, im
     }
   }
 
-  // ✅ Get all listings
+  // ✅ Get all listings (optionally filter by userId)
   async getListings(queries = []) {
     try {
       const response = await this.databases.listDocuments(
         conf.appWriteDatabaseId,
         conf.appWriteCollectionId,
-        queries
+        queries // You can pass [Query.equal('userId', userId)] to filter
       );
       return response.documents;
     } catch (error) {
@@ -74,7 +75,7 @@ async createListing({ title, description, category, price, location, contact, im
         conf.appWriteDatabaseId,
         conf.appWriteCollectionId,
         listingId,
-        updatedData
+        updatedData // userId can be included in updatedData if needed
       );
     } catch (error) {
       console.error("❌ updateListing error:", error);
