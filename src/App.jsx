@@ -17,6 +17,7 @@ import {
 } from "./components/Listings";
 
 function App() {
+  console.log("test");
   return (
     <>
       <BrowserRouter>
