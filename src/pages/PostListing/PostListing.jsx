@@ -10,7 +10,7 @@ function PostListing() {
   const [price, setPrice] = useState('');
   const [location, setLocation] = useState('');
   const [contact, setContact] = useState('');
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]); // store multiple files
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null); // State to store userId
 
@@ -49,17 +49,24 @@ function PostListing() {
     }
 
     // Upload the image (if any) and capture its $id
-    let imageId = null;
-    if (image) {
+    let imageIds = null;
+
+    if (images.length > 0) {
       try {
-        const uploadedFile = await storageService.uploadFile(image);
-        imageId = uploadedFile.$id; // Get the file ID
+        for (const file of images) {
+          const uploaded = await storageService.uploadFile(file);
+          imageIds=uploaded;
+          console.log("uploaded", typeof uploaded)
+        }
       } catch (err) {
-        console.error('❌ Error uploading image:', err);
-        setError('Failed to upload image. Please try again.');
+        console.error('❌ Error uploading images:', err);
+        setError('Failed to upload images. Please try again.');
         return;
       }
     }
+
+    console.log("imageIds",imageIds)
+
 
     try {
       const newListing = {
@@ -69,7 +76,7 @@ function PostListing() {
         price,
         location,
         contact,
-        imageId,
+        imageIds,
         userId, // Include userId in the listing data
       };
 
@@ -84,7 +91,7 @@ function PostListing() {
       setPrice('');
       setLocation('');
       setContact('');
-      setImage(null);
+      setImages([]);
     } catch (err) {
       console.error('❌ Error creating listing:', err);
       alert('Failed to create listing.');
@@ -186,9 +193,11 @@ function PostListing() {
             <label className="block text-sm font-medium mb-1">Image (optional)</label>
             <input
               type="file"
-              onChange={(e) => setImage(e.target.files[0])}
+              multiple
+              onChange={(e) => setImages([...e.target.files])} // store all files in an array
               className="w-full border border-dashed border-gray-300 rounded-md px-4 py-2"
             />
+
           </div>
 
           {/* Buttons */}

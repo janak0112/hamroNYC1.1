@@ -13,7 +13,7 @@ export class ListingService {
   }
 
   // ✅ Create a listing with userId
-  async createListing({ title, description, category, price, location, contact, imageId = null, userId }) {
+  async createListing({ title, description, category, price, location, contact, imageIds = null, userId }) {
     try {
       const response = await this.databases.createDocument(
         conf.appWriteDatabaseId,
@@ -26,7 +26,7 @@ export class ListingService {
           price,
           location,
           contact,
-          imageId,
+          imageIds,
           userId, // ✅ Add userId to the document
         }
       );
