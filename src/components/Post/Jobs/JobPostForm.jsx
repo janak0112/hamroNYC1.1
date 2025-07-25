@@ -18,7 +18,7 @@ const JobPostForm = () => {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const currentUser = await authService.getCurrentUser();
+        const currentUser = localStorage.getItem("userId");
         setUser(currentUser);
       } catch (error) {
         setUser(null);
@@ -46,15 +46,17 @@ const JobPostForm = () => {
         jobType: data.jobType,
         experienceRequired: data.experienceRequired,
         company: data.company,
+        checkOnly: data.checkOnly,
         imageId: null, // You can add image upload functionality later
       };
 
       // Create the job listing
-      const response = await listingService.createJobListing(jobData);
-      console.log("Job listing created:", response);
+      // const response = await listingService.createJobListing(jobData);
+      // console.log("Job listing created:", response);
 
-      // Redirect to the job listings page (or anywhere you prefer)
-      navigate("/jobs");
+      // // Redirect to the job listings page (or anywhere you prefer)
+      // navigate("/jobs");
+      console.log(jobData);
     } catch (error) {
       console.error("Error creating job listing:", error);
       alert("Failed to create job listing.");

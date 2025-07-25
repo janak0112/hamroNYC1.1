@@ -24,7 +24,7 @@ const MarketPostForm = () => {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const currentUser = await authService.getCurrentUser();
+        const currentUser = localStorage.getItem("userId");
         setUser(currentUser);
       } catch (error) {
         setUser(null);
@@ -84,12 +84,13 @@ const MarketPostForm = () => {
         condition: data.condition,
       };
 
-      // Create the market listing
-      const response = await listingService.createMarketListing(marketData);
-      console.log("Market listing created:", response);
+      // // Create the market listing
+      // const response = await listingService.createMarketListing(marketData);
+      // console.log("Market listing created:", response);
 
-      // Redirect to the market listings page (or anywhere you prefer)
-      navigate("/market");
+      // // Redirect to the market listings page (or anywhere you prefer)
+      // navigate("/market");
+      console.log(marketData);
     } catch (error) {
       console.error("Error creating market listing:", error);
       alert("Failed to create market listing.");

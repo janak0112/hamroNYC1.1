@@ -20,7 +20,7 @@ const RoomPostForm = () => {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const currentUser = await authService.getCurrentUser();
+        const currentUser = localStorage.getItem("userId");
         setUser(currentUser);
       } catch (error) {
         setUser(null);
@@ -41,21 +41,20 @@ const RoomPostForm = () => {
       const roomData = {
         title: data.title,
         description: data.description,
-        category: "room", // Explicitly setting category
         price: data.price,
         location: data.location,
         contact: data.contact,
-        imageId: null, // You can add image upload functionality later
-        bedrooms: data.bedrooms,
-        bathrooms: data.bathrooms,
+        bedrooms: parseInt(data.bedrooms),
+        bathrooms: parseInt(data.bathrooms),
         furnishing: data.furnishing,
         availableFrom: data.availableFrom,
-        isStudio: data.isStudio, // New field for Studio
+        isStudio: Boolean(data.isStudio), // New field for Studio
         utilitiesIncluded: data.utilitiesIncluded, // New field for Utilities Included
+        user: user,
+        publish: true,
       };
-
       // Create the room listing
-      const response = await listingService.createRoomListing(roomData);
+      const response = await listingService.createListings(roomData);
       console.log("Room listing created:", response);
 
       // Redirect to the room listings page (or anywhere you prefer)
@@ -219,25 +218,6 @@ const RoomPostForm = () => {
         </div>
 
         <div>
-          <label htmlFor="furnishing" className="block text-sm font-semibold">
-            Furnishing
-          </label>
-          <select
-            id="furnishing"
-            {...register("furnishing", {
-              required: "Furnishing type is required",
-            })}
-            className="w-full p-2 border border-gray-300 rounded-md"
-          >
-            <option value="furnished">Furnished</option>
-            <option value="unfurnished">Unfurnished</option>
-          </select>
-          {errors.furnishing && (
-            <p className="text-red-500 text-xs">{errors.furnishing.message}</p>
-          )}
-        </div>
-
-        <div>
           <label
             htmlFor="availableFrom"
             className="block text-sm font-semibold"
@@ -288,8 +268,24 @@ const RoomPostForm = () => {
           <label htmlFor="utilitiesIncluded" className="text-sm font-semibold">
             Utilities Included
           </label>
+          <div className="flex items-center">
+            <input
+              id="furnished"
+              type="checkbox"
+              {...register("furnishing", {
+                // Remove the `required` validation here
+                defaultValue: false, // Set default value as `false` (unchecked)
+              })}
+              className="h-4 w-4"
+            />
+            <label htmlFor="furnished" className="ml-2 text-sm">
+              Furnished
+            </label>
+          </div>
+
           {/* No Agent Fee */}
         </div>
+
         <p className="text-xs text-gray-500 mt-2">
           <strong>Disclaimer:</strong> We only promote properties with no agent
           fees.

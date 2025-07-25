@@ -42,6 +42,22 @@ export const createListing = async ({
   }
 };
 
+export const createListings = async (data) => {
+  try {
+    const response = await databases.createDocument(
+      conf.appWriteDatabaseId,
+      conf.appWriteCollectionIdRooms,
+      ID.unique(),
+      data
+    );
+    console.log("✅ Listing created:", response);
+    return response;
+  } catch (error) {
+    console.error("❌ createListing error:", error);
+    throw error;
+  }
+};
+
 // Get all listings (optionally filter by userId)
 export const getListings = async (queries = []) => {
   try {
@@ -106,5 +122,6 @@ const listingService = {
   getListing,
   updateListing,
   deleteListing,
+  createListings,
 };
 export default listingService;
