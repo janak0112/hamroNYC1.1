@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import authService from "../../appwrite/auth";
+import listingService from "../../appwrite/config";
 
 function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -23,6 +24,7 @@ function Header() {
       try {
         const user = await authService.getCurrentUser();
         localStorage.setItem("userId", user.$id);
+
         setIsLoggedIn(!!user);
       } catch (err) {
         console.error("User fetch error:", err);

@@ -59,12 +59,11 @@ export const createListings = async (data) => {
 };
 
 // Get all listings (optionally filter by userId)
-export const getListings = async (queries = []) => {
+export const getListings = async () => {
   try {
     const response = await databases.listDocuments(
       conf.appWriteDatabaseId,
-      conf.appWriteCollectionId,
-      queries // You can pass [Query.equal('userId', userId)] to filter
+      conf.appWriteCollectionIdRooms
     );
     return response.documents;
   } catch (error) {

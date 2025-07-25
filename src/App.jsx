@@ -8,7 +8,12 @@ import SignUp from "./pages/SignUp/SignUp";
 import Layout from "./pages/Layout/Layout";
 import Home from "./pages/Home/Home"; // Correct import for your Home page
 import PostListing from "./pages/PostListing/PostListing";
-import { JobPostForm, MarketPostForm, RoomPostForm } from "./components/Post";
+import {
+  JobPostForm,
+  MarketPostForm,
+  RoomPostForm,
+  EventPostForm,
+} from "./components/Post";
 import {
   JobDetailPage,
   MarketDetailPage,
@@ -17,7 +22,6 @@ import {
 } from "./components/Listings";
 
 function App() {
-  console.log("test");
   return (
     <>
       <BrowserRouter>
@@ -27,9 +31,10 @@ function App() {
             <Route path="signup" element={<SignUp />} />
             <Route path="login" element={<LogIn />} />
             <Route path="post-listing" element={<PostListing />} />
-            <Route path="post/job" element={<JobPostForm />} />
-            <Route path="post/market" element={<MarketPostForm />} />
-            <Route path="post/room" element={<RoomPostForm />} />
+            <Route path="add-job" element={<JobPostForm />} />
+            <Route path="add-market" element={<MarketPostForm />} />
+            <Route path="add-room" element={<RoomPostForm />} />
+            <Route path="add-event" element={<EventPostForm />} />
             <Route path="jobs/:id" element={<JobDetailPage />} />
             <Route path="markets/:id" element={<MarketDetailPage />} />
             <Route path="events/:id" element={<EventDetailPage />} />
