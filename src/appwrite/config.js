@@ -75,11 +75,12 @@ export const getListings = async () => {
 // Get single listing by ID
 export const getListing = async (listingId) => {
   try {
-    return await databases.getDocument(
+    const response = await databases.getDocument(
       conf.appWriteDatabaseId,
-      conf.appWriteCollectionId,
+      conf.appWriteCollectionIdRooms,
       listingId
     );
+    return response.documents;
   } catch (error) {
     console.error("❌ getListing error:", error);
     throw error;
