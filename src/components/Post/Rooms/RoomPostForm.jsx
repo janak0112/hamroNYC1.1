@@ -58,7 +58,7 @@ const RoomPostForm = () => {
       console.log("Room listing created:", response);
 
       // Redirect to the room listings page (or anywhere you prefer)
-      navigate("/rooms");
+      // navigate("/rooms");
     } catch (error) {
       console.error("Error creating room listing:", error);
       alert("Failed to create room listing.");

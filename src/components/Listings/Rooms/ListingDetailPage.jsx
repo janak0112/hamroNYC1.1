@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from "react";
-import { useParams } from "react-router";
-
+import React, { useState, useCallback, useContext } from "react";
+import { useParams } from "react-router-dom";
+import { DataContext } from "../../../context/DataContext";
 import {
   Phone,
   MapPin,
@@ -12,50 +12,67 @@ import {
 import ImgApt from "../../../assets/img/apt-kitchen.png";
 import userPic from "../../../assets/img/user-pic.png";
 
-export default function ListingDetailPage({ listing }) {
-  // ────────────────────────────────────────────────────────────────────────────
-  // fallback mock data for design‑time preview
-  const { id } = useParams(); // This will retrieve the 'id' from the URL
-  console.log(id);
-  if (!listing) {
-    listing = {
-      id: 1,
-      title: "Wystone 147‑ga/19 Avenue · 1st floor · 2 Bed · 1 Bath",
-      price: 2400,
-      location: "Queens, NY",
-      date: "2025‑07‑21",
-      views: 48,
-      type: "room", // job | item | giveaway etc.
-      images: [ImgApt, ImgApt, ImgApt, ImgApt, ImgApt, ImgApt],
-      specs: {
-        bedrooms: 2,
-        bathrooms: 1,
-        area: 700, // ft²
-        moveIn: "Immediate",
-        period: "More than a year",
-        utilities: 0,
-        deposit: 2400,
-        canCook: true,
-      },
-      description: [
-        "Flushing 147‑ga / 19 Avenue 1st floor, quiet and safe neighborhood.",
-        "Convenient transportation with easy access to the highway.",
-        "Close to public transportation and marts.",
-        "Please contact me for more information. 212‑844‑9794",
-      ],
-      contact: {
-        name: "Kimberly Park",
-        phone: 6463215678,
-        avatar: { userPic },
-      },
-    };
-  }
+export default function ListingDetailPage() {
+  const { id } = useParams(); // Get the room ID from the URL
+  const { rooms, loading, error, fetchRooms } = useContext(DataContext);
 
-  // ────────────────────────────────────────────────────────────────────────────
+  // Find the room by ID
+  const room = rooms.find((r) => r.$id === id);
+
+  // Handle loading and error states
+  if (loading) return <p className="text-center p-8">Loading...</p>;
+  if (error)
+    return (
+      <p className="text-center p-8 text-red-500">
+        Error: {error}{" "}
+        <button
+          onClick={fetchRooms}
+          className="ml-2 text-blue-500 underline"
+        >
+          Retry
+        </button>
+      </p>
+    );
+  if (!room)
+    return <p className="text-center p-8">Room not found.</p>;
+
+  // Map Appwrite room data to listing structure
+  const listing = {
+    id: room.$id,
+    title: room.title,
+    price: room.price || 0, // Fallback for null price
+    location: room.location,
+    date: new Date(room.$createdAt).toISOString().split("T")[0], // Format createdAt as YYYY-MM-DD
+    views: 0, // Appwrite document doesn't provide views, use 0 or fetch from another source
+    type: "room",
+    images: [ImgApt, ImgApt, ImgApt], // Placeholder images (adjust if using Appwrite bucket)
+    specs: {
+      bedrooms: room.bedrooms || "N/A", // Fallback for null
+      bathrooms: room.bathrooms || "N/A", // Fallback for null
+      area: "N/A", // Not provided in document
+      moveIn: new Date(room.availableFrom).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }), // Format availableFrom
+      period: "N/A", // Not provided in document
+      utilities: room.utilitiesIncluded ? 1 : 0, // Map boolean to 0/1
+      deposit: 0, // Not provided, use 0 or adjust
+      canCook: true, // Not provided, assuming true (adjust as needed)
+    },
+    description: room.description.split(". ").filter(Boolean), // Split into array by sentence
+    contact: {
+      name: room.user || "Unknown User",
+      phone: room.contact,
+      avatar: userPic, // Placeholder avatar
+    },
+  };
+
+  // State for image gallery
   const [active, setActive] = useState(0);
   const changeSlide = useCallback((i) => setActive(i), []);
 
-  // helper formatter
+  // Helper formatter for currency
   const usd = (n) =>
     n.toLocaleString("en-US", {
       style: "currency",
@@ -76,8 +93,8 @@ export default function ListingDetailPage({ listing }) {
         <div className="text-sm text-gray-500 flex items-center gap-2">
           <MapPin size={14} /> {listing.location}
           <span className="hidden sm:inline">·</span>
-          <span className="hidden sm:inline">Views {listing.views}</span>
-          <span className="hidden sm:inline">· Date {listing.date}</span>
+          <span className="hidden sm:inline">Views {listing.views}</span>
+          <span className="hidden sm:inline">· Date {listing.date}</span>
         </div>
       </header>
 
@@ -147,12 +164,12 @@ export default function ListingDetailPage({ listing }) {
             </li>
             <li className="flex justify-between py-1">
               <span className="flex items-center gap-1">Area</span>
-              <span>{listing.specs.area} ft²</span>
+              <span>{listing.specs.area} ft²</span>
             </li>
             <li className="flex justify-between py-1">
               <span className="flex items-center gap-1">
                 <CalendarClock size={14} />
-                Move‑in
+                Move-in
               </span>
               <span>{listing.specs.moveIn}</span>
             </li>
@@ -183,12 +200,12 @@ export default function ListingDetailPage({ listing }) {
         ))}
       </section>
 
-      {/* ── contact INFO / FOOTER ───────────────────────────────────────────── */}
+      {/* ── CONTACT INFO / FOOTER ───────────────────────────────────────────── */}
       <aside className="mt-10 grid md:grid-cols-[1fr_250px] gap-8">
         {/* Placeholder for comments / ads */}
         <div className="space-y-4" />
 
-        {/* contact card */}
+        {/* Contact card */}
         <div className="bg-white shadow rounded-lg p-4 space-y-3">
           <h3 className="font-semibold text-gray-700">Contact INFO</h3>
           <div className="flex items-center gap-3">

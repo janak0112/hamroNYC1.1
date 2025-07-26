@@ -20,29 +20,33 @@ import {
   EventDetailPage,
   ListingDetailPage,
 } from "./components/Listings";
+import { DataProvider } from "./context/DataContext";
+import RoomList from "./components/Listings/RoomList/RoomList";
 
 function App() {
   return (
     <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="signup" element={<SignUp />} />
-            <Route path="login" element={<LogIn />} />
-            <Route path="post-listing" element={<PostListing />} />
-            <Route path="add-job" element={<JobPostForm />} />
-            <Route path="add-market" element={<MarketPostForm />} />
-            <Route path="add-room" element={<RoomPostForm />} />
-            <Route path="add-event" element={<EventPostForm />} />
-            <Route path="jobs/:id" element={<JobDetailPage />} />
-            <Route path="markets/:id" element={<MarketDetailPage />} />
-            <Route path="events/:id" element={<EventDetailPage />} />
-            <Route path="rooms/:id" element={<ListingDetailPage />} />
-          </Route>
-        </Routes>
-        r
-      </BrowserRouter>
+      <DataProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="signup" element={<SignUp />} />
+              <Route path="login" element={<LogIn />} />
+              <Route path="post-listing" element={<PostListing />} />
+              <Route path="add-job" element={<JobPostForm />} />
+              <Route path="add-market" element={<MarketPostForm />} />
+              <Route path="add-room" element={<RoomPostForm />} />
+              <Route path="add-event" element={<EventPostForm />} />
+              <Route path="jobs/:id" element={<JobDetailPage />} />
+              <Route path="markets/:id" element={<MarketDetailPage />} />
+              <Route path="events/:id" element={<EventDetailPage />} />
+              <Route path="rooms/room-list" element={<RoomList />} />
+              <Route path="rooms/:id" element={<ListingDetailPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </DataProvider>
     </>
   );
 }
