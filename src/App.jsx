@@ -6,7 +6,7 @@ import Greetings from "./components/Greetings/Greetings";
 import LogIn from "./pages/Login/Login";
 import SignUp from "./pages/SignUp/SignUp";
 import Layout from "./pages/Layout/Layout";
-import Home from "./pages/Home/Home"; // Correct import for your Home page
+import HomePage from "./pages/Home/HomePage"; // Correct import for your Home page
 import PostListing from "./pages/PostListing/PostListing";
 import {
   JobPostForm,
@@ -30,7 +30,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Layout />}>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<HomePage />} />
               <Route path="signup" element={<SignUp />} />
               <Route path="login" element={<LogIn />} />
               <Route path="post-listing" element={<PostListing />} />
