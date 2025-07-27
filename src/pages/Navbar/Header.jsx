@@ -60,7 +60,7 @@ function Header() {
           alt="Nepali Connect NYC"
           className="w-10 h-10 rounded-full mr-3 object-contain"
         />
-        <span className="text-2xl font-bold custom-primary">Logo</span>
+        <span className="text-2xl font-bold custom-primary">Hamro NYC</span>
       </Link>
 
       <nav className="flex items-center space-x-6">

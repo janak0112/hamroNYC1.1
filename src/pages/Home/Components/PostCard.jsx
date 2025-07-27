@@ -21,11 +21,14 @@ const PostCard = ({ post }) => (
     </p>
     <Link
       to={`/${post.type}/${post.$id}`}
-      className="mt-4 inline-block text-blue-500 hover:underline"
+      className=" mt-3 w-full block text-white bg-[rgb(205,74,61)] text-center py-2 px-4 rounded hover:bg-white hover:text-[rgb(205,74,61)] border border-[rgb(205,74,61)] transition"
     >
       View Details
     </Link>
+
+    
   </div>
 );
 
 export default PostCard;
+
