@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import listingService from "../../../appwrite/config"; // Adjust the path as needed
 import authService from "../../../appwrite/auth"; // Adjust path for auth service
+import Modal from "../../Modals/Modal";
 
 const RoomPostForm = () => {
   const {
@@ -10,10 +11,13 @@ const RoomPostForm = () => {
     handleSubmit,
     formState: { errors },
     setValue,
+    reset
   } = useForm();
   const [user, setUser] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isStudio, setIsStudio] = useState(false); // Track studio selection
+  const [isStudio, setIsStudio] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const navigate = useNavigate();
 
   // Check if the user is logged in
@@ -31,12 +35,13 @@ const RoomPostForm = () => {
 
   const onSubmit = async (data) => {
     if (!user) {
-      alert("You need to be logged in to create a post.");
+      // You can open the error modal here as well
+      setShowErrorModal(true);
       return;
     }
-
+  
     setIsSubmitting(true);
-
+  
     try {
       const roomData = {
         title: data.title,
@@ -48,33 +53,33 @@ const RoomPostForm = () => {
         bathrooms: parseInt(data.bathrooms),
         furnishing: data.furnishing,
         availableFrom: data.availableFrom,
-        isStudio: Boolean(data.isStudio), // New field for Studio
-        utilitiesIncluded: data.utilitiesIncluded, // New field for Utilities Included
+        isStudio: Boolean(data.isStudio),
+        utilitiesIncluded: data.utilitiesIncluded,
         user: user,
         publish: true,
       };
-      // Create the room listing
+  
       const response = await listingService.createListings(roomData);
       console.log("Room listing created:", response);
+  
+      // Clear the form and update states after success
+      reset();
+      setIsStudio(false);
+      setShowSuccessModal(true);
 
-      // Redirect to the room listings page (or anywhere you prefer)
-      // navigate("/rooms");
+      // Optional: Redirect after a delay
+      // setTimeout(() => {
+      //   setShowSuccessModal(false);
+      //   navigate("/rooms"); 
+      // }, 3000);
     } catch (error) {
       console.error("Error creating room listing:", error);
-      alert("Failed to create room listing.");
+      setShowErrorModal(true);
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  //   if (!user) {
-  //     return (
-  //       <div className="text-center">
-  //         <p>You must be logged in to create a post.</p>
-  //       </div>
-  //     );
-  //   }
-
+  
   const handleStudioChange = (e) => {
     const value = e.target.value === "true"; // Convert the string value to a boolean
     setIsStudio(value);
@@ -86,6 +91,16 @@ const RoomPostForm = () => {
     }
   };
 
+  // useEffect(() => {
+  //   if (showSuccessModal) {
+  //     const timer = setTimeout(() => {
+  //       setShowSuccessModal(false);
+  //       // navigate("/rooms");
+  //     }, 3000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [showSuccessModal, navigate]);
+  
   return (
     <div className="container mx-auto p-6">
       <h2 className="text-2xl font-bold text-center mb-6">
@@ -96,6 +111,7 @@ const RoomPostForm = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-xl mx-auto space-y-4"
       >
+        {/* -- Form fields remain the same -- */}
         <div>
           <label htmlFor="title" className="block text-sm font-semibold">
             Title
@@ -167,7 +183,7 @@ const RoomPostForm = () => {
           </label>
           <input
             id="contact"
-            type="text"
+            type="tel"
             placeholder="Contact Number"
             {...register("contact", { required: "Contact info is required" })}
             className="w-full p-2 border border-gray-300 rounded-md"
@@ -257,7 +273,7 @@ const RoomPostForm = () => {
           )}
         </div>
 
-        {/* Utilities Included */}
+        {/* Utilities and Furnishing */}
         <div className="mt-4 flex items-center space-x-2">
           <input
             id="utilitiesIncluded"
@@ -273,8 +289,7 @@ const RoomPostForm = () => {
               id="furnished"
               type="checkbox"
               {...register("furnishing", {
-                // Remove the `required` validation here
-                defaultValue: false, // Set default value as `false` (unchecked)
+                defaultValue: false,
               })}
               className="h-4 w-4"
             />
@@ -282,13 +297,10 @@ const RoomPostForm = () => {
               Furnished
             </label>
           </div>
-
-          {/* No Agent Fee */}
         </div>
 
         <p className="text-xs text-gray-500 mt-2">
-          <strong>Disclaimer:</strong> We only promote properties with no agent
-          fees.
+          <strong>Disclaimer:</strong> We only promote properties with no agent fees.
         </p>
         <button
           type="submit"
@@ -298,8 +310,24 @@ const RoomPostForm = () => {
           {isSubmitting ? "Creating Listing..." : "Create Listing"}
         </button>
       </form>
+
+      {/* Render the notification modals */}
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        title="Room Listing Created!"
+        message="Your room has been successfully posted."
+      />
+
+      <Modal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        title="Error"
+        message="Failed to create room listing."
+      />
     </div>
   );
 };
 
 export default RoomPostForm;
+

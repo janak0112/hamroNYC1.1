@@ -135,7 +135,7 @@ export default function ListingDetailPage() {
         {/* ── SIDEBAR ──────────────────────────────────────────────────────── */}
         <aside className="bg-white rounded-lg shadow p-4 space-y-4 h-fit">
           <div>
-            <p className="text-2xl font-extrabold text-custom-primary">
+            <p className="text-2xl font-extrabold text-custom-primary">$
               {usd(listing.price)}
               <span className="ml-1 text-base font-normal text-gray-600">
                 FOR RENT
