@@ -1,15 +1,14 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom'  // ✅ Import Outlet
-import Header from '../../components/Header/header'
-
+import React from "react";
+import { Outlet } from "react-router-dom"; // ✅ Import Outlet
+import Header from "../Navbar/Header";
 
 function Layout() {
-    return (
-        <div>
-            <Header />
-            <Outlet /> {/* ✅ Use JSX-style comment */}
-        </div>
-    )
+  return (
+    <div>
+      <Header />
+      <Outlet /> {/* ✅ Use JSX-style comment */}
+    </div>
+  );
 }
 
-export default Layout
+export default Layout;

@@ -1,107 +1,75 @@
-import { createContext, useState, useCallback, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import { Client, Databases, Storage } from "appwrite";
-import conf from "./../conf/conf"; // Adjust the import path as needed
+import conf from "../conf/conf";
 
-// Create the DataContext
 export const DataContext = createContext();
 
-// DataProvider component to fetch and provide data
 export const DataProvider = ({ children }) => {
-    const [posts, setPosts] = useState([]);
-    const [rooms, setRooms] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [market, setMarket] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    // Initialize Appwrite client
-    const client = new Client();
-    client
-        .setEndpoint(conf.appWriteUrl)
-        .setProject(conf.appWriteProjectId);
+  const client = new Client()
+    .setEndpoint(conf.appWriteUrl)
+    .setProject(conf.appWriteProjectId);
 
-    const databases = new Databases(client);
-    const storage = new Storage(client);
+  const databases = new Databases(client);
+  const storage = new Storage(client);
 
-    // Function to fetch posts from Appwrite collection
-    const fetchPosts = useCallback(async () => {
-        setLoading(true);
-        try {
-            const response = await databases.listDocuments(
-                conf.appWriteDatabaseId,
-                conf.appWriteCollectionId
-            );
-            const postsWithImages = await Promise.all(
-                response.documents.map(async (post) => {
-                    let imageUrls = [];
-                    if (post.imageIds && Array.isArray(post.imageIds)) {
-                        // Fetch URLs for all image IDs in the imageIds array
-                        imageUrls = await Promise.all(
-                            post.imageIds.map(async (imageId) => {
-                                try {
-                                    const file = await storage.getFileView(
-                                        conf.appWriteBucketId,
-                                        imageId
-                                    );
-                                    return file.href;
-                                } catch (err) {
-                                    console.error(`Error fetching image ${imageId}:`, err);
-                                    return null;
-                                }
-                            })
-                        );
-                        // Filter out any null URLs
-                        imageUrls = imageUrls.filter((url) => url !== null);
-                    }
-                    return { ...post, imageUrls };
-                })
-            );
-            setPosts(postsWithImages);
-            setError(null);
-        } catch (err) {
-            setError(err.message);
-            console.error("Error fetching posts:", err);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  const collectionIds = [
+    { type: "jobs", id: conf.appWriteCollectionIdJobs },
+    { type: "rooms", id: conf.appWriteCollectionIdRooms },
+    { type: "market", id: conf.appWriteCollectionIdMarket },
+  ];
 
-    // Function to fetch rooms from Appwrite collection
-    const fetchRooms = useCallback(async () => {
-        setLoading(true);
-        try {
-            const response = await databases.listDocuments(
-                conf.appWriteDatabaseId,
-                conf.appWriteCollectionIdRooms
-            );
-            setRooms(response.documents);
-            setError(null);
-        } catch (err) {
-            setError(err.message);
-            console.error("Error fetching rooms:", err);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  const fetchAllData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = [];
 
-    // Fetch data when the component mounts
-    useEffect(() => {
-        fetchPosts();
-        fetchRooms();
-    }, [fetchPosts, fetchRooms]);
+      for (const col of collectionIds) {
+        const res = await databases.listDocuments(
+          conf.appWriteDatabaseId,
+          col.id
+        );
+        result.push(
+          ...res.documents.map((doc) => ({ ...doc, type: col.type }))
+        );
+      }
 
-    return (
-        <DataContext.Provider
-            value={{
-                posts,
-                rooms,
-                loading,
-                error,
-                fetchPosts,
-                fetchRooms,
-            }}
-        >
-            {children}
-        </DataContext.Provider>
-    );
+      setPosts(result);
+      setJobs(result.filter((doc) => doc.type === "jobs"));
+      setRooms(result.filter((doc) => doc.type === "rooms"));
+      setMarket(result.filter((doc) => doc.type === "market"));
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
+
+  return (
+    <DataContext.Provider
+      value={{
+        posts, // all documents together
+        jobs, // only jobs
+        rooms, // only rooms
+        market, // only market
+        loading,
+        error,
+        fetchAllData,
+      }}
+    >
+      {children}
+    </DataContext.Provider>
+  );
 };
-
-export default conf;
