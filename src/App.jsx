@@ -36,18 +36,11 @@ function App() {
               <Route path="add-market" element={<MarketPostForm />} />
               <Route path="add-room" element={<RoomPostForm />} />
               <Route path="add-event" element={<EventPostForm />} />
-
               <Route path="jobs/:id" element={<JobDetailPage />} />
-              {/* <Route path="jobs/job-list" element={<JobDetailPage />} /> */}
-
-              <Route path="markets/:id" element={<MarketDetailPage />} />
-              {/* <Route path="markets/market-list" element={<MarketDetailPage />} /> */}
-
+              <Route path="market/:id" element={<MarketDetailPage />} />
               <Route path="events/:id" element={<EventDetailPage />} />
-              {/* <Route path="events/event-list" element={<EventDetailPage />} /> */}
-
-              <Route path="rooms/room-list" element={<RoomList />} />
               <Route path="rooms/:id" element={<ListingDetailPage />} />
+              <Route path="rooms/room-list" element={<RoomList />} />
             </Route>
           </Routes>
         </BrowserRouter>
