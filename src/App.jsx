@@ -1,7 +1,5 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Categories from "./components/Categories/Categories";
-import Greetings from "./components/Greetings/Greetings";
 
 import LogIn from "./pages/Login/Login";
 import SignUp from "./pages/SignUp/SignUp";

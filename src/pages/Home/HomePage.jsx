@@ -9,6 +9,7 @@ import Footer from "./Components/Footer";
 
 function HomePage() {
   const { jobs, rooms, market, loading, error } = useContext(DataContext);
+  console.log(jobs);
 
   return (
     <div className="space-y-6">

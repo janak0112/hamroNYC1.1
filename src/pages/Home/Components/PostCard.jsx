@@ -20,7 +20,7 @@ const PostCard = ({ post }) => (
       {post.description || "No description available."}
     </p>
     <Link
-      to={`/posts/${post.$id}`}
+      to={`/${post.type}/${post.$id}`}
       className="mt-4 inline-block text-blue-500 hover:underline"
     >
       View Details
