@@ -19,7 +19,7 @@ const PostSection = ({ title, data = [], loading, error, link }) => (
       <p className="text-gray-500">No {title.toLowerCase()} available.</p>
     ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {data.slice(0, 3).map((post) => (
+        {data.map((post) => (
           <PostCard key={post.$id} post={post} />
         ))}
       </div>

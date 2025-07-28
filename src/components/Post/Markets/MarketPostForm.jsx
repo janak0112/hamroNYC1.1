@@ -1,111 +1,85 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-// import { uploadImage } from "../../../appwrite/StorageService"; // Import the upload function
 import listingService from "../../../appwrite/config"; // Adjust path as needed
-import authService from "../../../appwrite/auth"; // Adjust path for auth service
+import authService from "../../../appwrite/auth"; // Adjust path as needed
+import { uploadImages } from "../../../utils/uploadFile"; // Adjust path as needed
 
 const MarketPostForm = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
   } = useForm();
+
   const [user, setUser] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [image, setImage] = useState(null); // Store selected image
-  const [imageId, setImageId] = useState(null); // Store imageId after upload
-  const [imagePreview, setImagePreview] = useState(null); // Store the image preview URL
-  const [uploading, setUploading] = useState(false); // Track upload progress
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [imagePreview, setImagePreview] = useState([]);
   const navigate = useNavigate();
 
   // Check if the user is logged in
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const currentUser = localStorage.getItem("userId");
-        setUser(currentUser);
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser.$id);
+        } else {
+          navigate("/login");
+        }
       } catch (error) {
-        setUser(null);
+        console.error("User check failed:", error);
+        navigate("/login");
       }
     };
     checkUser();
-  }, []);
+  }, [navigate]);
 
-  // Handle image file selection
+  // Handle image selection and preview
   const handleImageChange = (e) => {
-    const selectedImage = e.target.files[0];
-    if (selectedImage) {
-      setImage(selectedImage);
-      setImagePreview(URL.createObjectURL(selectedImage)); // Preview the selected image
-    }
-  };
-
-  // Handle image upload
-  const handleImageUpload = async () => {
-    if (!image) {
-      alert("Please select an image.");
-      return;
-    }
-
-    setUploading(true);
-    try {
-      //   const uploadedImageId = await uploadImage(image, (progress) => {
-      //     // Optionally handle the progress here (for example, show progress bar)
-      //     console.log("Upload progress:", progress);
-      //   });
-      //   setImageId(uploadedImageId); // Set the imageId after successful upload
-      setUploading(false);
-    } catch (error) {
-      console.error("❌ Error uploading image:", error);
-      setUploading(false);
-    }
+    const files = Array.from(e.target.files).slice(0, 5);
+    setSelectedFiles(files);
+    setImagePreview(files.map((file) => URL.createObjectURL(file)));
   };
 
   // Handle form submission
   const onSubmit = async (data) => {
-    if (!imageId) {
-      alert("Please upload an image first.");
+    if (!user) {
+      alert("Please log in to create a listing.");
       return;
     }
 
     setIsSubmitting(true);
-
     try {
+      let uploadedImageIds = [];
+
+      if (selectedFiles.length > 0) {
+        uploadedImageIds = await uploadImages(selectedFiles);
+      }
+
       const marketData = {
         title: data.title,
         description: data.description,
-        category: "market", // Explicitly setting category to market
+        category: "market",
         price: data.price,
         location: data.location,
         contact: data.contact,
-        imageId, // Pass the imageId from the upload
         condition: data.condition,
+        imageIds: uploadedImageIds,
+        userId: user,
+        publish: true,
       };
 
-      // // Create the market listing
-      // const response = await listingService.createMarketListing(marketData);
-      // console.log("Market listing created:", response);
-
-      // // Redirect to the market listings page (or anywhere you prefer)
-      // navigate("/market");
-      console.log(marketData);
+      await listingService.createMarketListing(marketData);
+      navigate("/market");
     } catch (error) {
-      console.error("Error creating market listing:", error);
-      alert("Failed to create market listing.");
+      console.error("Failed to create listing:", error);
+      alert("Error: Could not create market listing.");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  //   if (!user) {
-  //     return (
-  //       <div className="text-center">
-  //         <p>You must be logged in to create a post.</p>
-  //       </div>
-  //     );
-  //   }
 
   return (
     <div className="container mx-auto p-6">
@@ -218,42 +192,30 @@ const MarketPostForm = () => {
           )}
         </div>
 
-        {/* Image Upload Section */}
-        <div className="mt-4">
-          <label htmlFor="image" className="block text-sm font-semibold">
-            Upload Image
+        <div>
+          <label htmlFor="images" className="block text-sm font-semibold">
+            Upload Images (Max 5)
           </label>
-
-          {/* File Input */}
           <input
-            id="image"
-            multiple
+            id="images"
             type="file"
             accept="image/*"
+            multiple
             onChange={handleImageChange}
             className="w-full p-2 border border-gray-300 rounded-md"
           />
-
-          {/* Image Preview */}
-          {imagePreview && (
-            <div className="mt-2">
-              <img
-                src={imagePreview}
-                alt="Image Preview"
-                className="w-full h-48 object-cover rounded-md"
-              />
+          {imagePreview.length > 0 && (
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              {imagePreview.map((src, index) => (
+                <img
+                  key={index}
+                  src={src}
+                  alt={`Preview ${index + 1}`}
+                  className="w-full h-40 object-cover rounded"
+                />
+              ))}
             </div>
           )}
-
-          {/* Upload Button */}
-          <button
-            type="button"
-            onClick={handleImageUpload}
-            disabled={uploading}
-            className="mt-2 w-full py-2 text-white font-semibold rounded-md bg-blue-500 hover:bg-blue-600"
-          >
-            {uploading ? "Uploading..." : "Upload Image"}
-          </button>
         </div>
 
         <button

@@ -3,9 +3,15 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Phone, MapPin, CalendarClock, CheckCircle } from "lucide-react";
 
-function JobDetailContent({ job }) {
+function JobDetailContent({ job, imageUrl }) {
+  console.log("IMG:" + imageUrl);
   return (
     <div className="container mx-auto p-6">
+      <div>
+        {imageUrl && <img src={imageUrl} alt={job.title} className="mb-4" />}
+        <h1 className="text-xl font-bold">{job.title}</h1>
+        {/* more job details */}
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column */}
         <div className="col-span-2">

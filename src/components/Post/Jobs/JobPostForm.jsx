@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import listingService from "../../../appwrite/config";
 import authService from "../../../appwrite/auth";
+import { uploadImages } from "../../../utils/uploadFile"; // Utility function
 import Modal from "../../Modals/Modal";
 
 const JobPostForm = () => {
@@ -22,15 +23,17 @@ const JobPostForm = () => {
       experienceRequired: 0,
       company: "",
       checkOnly: false,
+      userId: "",
     },
   });
-  const [user, setUser] = useState(null);
+
+  const [userId, setUser] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const navigate = useNavigate();
 
-  // Check user authentication
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -49,7 +52,7 @@ const JobPostForm = () => {
   }, [navigate]);
 
   const onSubmit = async (data) => {
-    if (!user) {
+    if (!userId) {
       setErrorMessage("Please log in to create a job listing.");
       return;
     }
@@ -57,19 +60,23 @@ const JobPostForm = () => {
     setIsSubmitting(true);
 
     try {
+      let uploadedImageIds = [];
+
+      if (selectedFiles.length > 0) {
+        uploadedImageIds = await uploadImages(selectedFiles);
+      }
+
       const jobData = {
         title: data.title,
         description: data.description,
-        category: "job",
-        salary: parseFloat(data.salary),
+        salary: data.salary,
         location: data.location,
         contact: data.contact,
-        jobType: data.jobType,
-        experienceRequired: parseInt(data.experienceRequired),
+        experienceRequired: data.experienceRequired,
         company: data.company,
         checkOnly: data.checkOnly,
-        imageId: null,
-        user,
+        imageIds: uploadedImageIds,
+        userId,
         publish: true,
       };
 
@@ -77,6 +84,7 @@ const JobPostForm = () => {
       console.log("Job listing created:", response);
 
       reset();
+      setSelectedFiles([]);
       setShowSuccessModal(true);
 
       setTimeout(() => {
@@ -111,10 +119,9 @@ const JobPostForm = () => {
             placeholder="Job Title"
             {...register("title", {
               required: "Title is required",
-              maxLength: { value: 100, message: "Title cannot exceed 100 characters" },
+              maxLength: 100,
             })}
             className="w-full p-2 border border-gray-300 rounded-md"
-            aria-invalid={errors.title ? "true" : "false"}
           />
           {errors.title && (
             <p className="text-red-500 text-xs">{errors.title.message}</p>
@@ -130,10 +137,9 @@ const JobPostForm = () => {
             placeholder="Describe the job role"
             {...register("description", {
               required: "Description is required",
-              maxLength: { value: 500, message: "Description cannot exceed 500 characters" },
+              maxLength: 500,
             })}
             className="w-full p-2 border border-gray-300 rounded-md"
-            aria-invalid={errors.description ? "true" : "false"}
           />
           {errors.description && (
             <p className="text-red-500 text-xs">{errors.description.message}</p>
@@ -149,12 +155,8 @@ const JobPostForm = () => {
             type="number"
             step="0.01"
             placeholder="Salary"
-            {...register("salary", {
-              required: "Salary is required",
-              min: { value: 0, message: "Salary must be positive" },
-            })}
+            {...register("salary", { required: "Salary is required", min: 0 })}
             className="w-full p-2 border border-gray-300 rounded-md"
-            aria-invalid={errors.salary ? "true" : "false"}
           />
           {errors.salary && (
             <p className="text-red-500 text-xs">{errors.salary.message}</p>
@@ -171,10 +173,9 @@ const JobPostForm = () => {
             placeholder="Job Location"
             {...register("location", {
               required: "Location is required",
-              maxLength: { value: 200, message: "Location cannot exceed 200 characters" },
+              maxLength: 200,
             })}
             className="w-full p-2 border border-gray-300 rounded-md"
-            aria-invalid={errors.location ? "true" : "false"}
           />
           {errors.location && (
             <p className="text-red-500 text-xs">{errors.location.message}</p>
@@ -197,7 +198,6 @@ const JobPostForm = () => {
               },
             })}
             className="w-full p-2 border border-gray-300 rounded-md"
-            aria-invalid={errors.contact ? "true" : "false"}
           />
           {errors.contact && (
             <p className="text-red-500 text-xs">{errors.contact.message}</p>
@@ -212,7 +212,6 @@ const JobPostForm = () => {
             id="jobType"
             {...register("jobType", { required: "Job type is required" })}
             className="w-full p-2 border border-gray-300 rounded-md"
-            aria-invalid={errors.jobType ? "true" : "false"}
           >
             <option value="full-time">Full-Time</option>
             <option value="part-time">Part-Time</option>
@@ -236,10 +235,9 @@ const JobPostForm = () => {
             placeholder="Experience Required"
             {...register("experienceRequired", {
               required: "Experience is required",
-              min: { value: 0, message: "Experience cannot be negative" },
+              min: 0,
             })}
             className="w-full p-2 border border-gray-300 rounded-md"
-            aria-invalid={errors.experienceRequired ? "true" : "false"}
           />
           {errors.experienceRequired && (
             <p className="text-red-500 text-xs">
@@ -257,14 +255,35 @@ const JobPostForm = () => {
             type="text"
             placeholder="Company Name"
             {...register("company", {
-              required: "Company name is required",
-              maxLength: { value: 100, message: "Company name cannot exceed 100 characters" },
+              required: "Company is required",
+              maxLength: 100,
             })}
             className="w-full p-2 border border-gray-300 rounded-md"
-            aria-invalid={errors.company ? "true" : "false"}
           />
           {errors.company && (
             <p className="text-red-500 text-xs">{errors.company.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="images" className="block text-sm font-semibold">
+            Upload Images (Max 5)
+          </label>
+          <input
+            id="images"
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => {
+              const files = Array.from(e.target.files).slice(0, 5);
+              setSelectedFiles(files);
+            }}
+            className="w-full p-2 border border-gray-300 rounded-md"
+          />
+          {selectedFiles.length > 0 && (
+            <p className="text-xs text-gray-500 mt-1">
+              {selectedFiles.length} image(s) selected
+            </p>
           )}
         </div>
 
@@ -283,7 +302,7 @@ const JobPostForm = () => {
         <button
           type="submit"
           className="w-full py-2 text-white font-semibold rounded-md bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
-          disabled={isSubmitting || !user}
+          disabled={isSubmitting || !userId}
         >
           {isSubmitting ? "Creating Listing..." : "Create Listing"}
         </button>

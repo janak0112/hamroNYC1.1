@@ -58,6 +58,38 @@ export const createListings = async (data) => {
   }
 };
 
+export const createJobListing = async (data) => {
+  try {
+    const response = await databases.createDocument(
+      conf.appWriteDatabaseId,
+      conf.appWriteCollectionIdJobs,
+      ID.unique(),
+      data
+    );
+    console.log("✅ Listing created:", response);
+    return response;
+  } catch (error) {
+    console.error("❌ createListing error:", error);
+    throw error;
+  }
+};
+
+export const createMarketListing = async (data) => {
+  try {
+    const response = await databases.createDocument(
+      conf.appWriteDatabaseId,
+      conf.appWriteCollectionIdMarket,
+      ID.unique(),
+      data
+    );
+    console.log("✅ Listing created:", response);
+    return response;
+  } catch (error) {
+    console.error("❌ createListing error:", error);
+    throw error;
+  }
+};
+
 // Get all listings (optionally filter by userId)
 export const getListings = async () => {
   try {
@@ -123,5 +155,7 @@ const listingService = {
   updateListing,
   deleteListing,
   createListings,
+  createJobListing,
+  createMarketListing,
 };
 export default listingService;
