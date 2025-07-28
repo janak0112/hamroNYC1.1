@@ -61,8 +61,8 @@ const MarketPostForm = () => {
       const marketData = {
         title: data.title,
         description: data.description,
-        category: "market",
-        price: data.price,
+        type: "market",
+        price: parseInt(data.price),
         location: data.location,
         contact: data.contact,
         condition: data.condition,
@@ -70,7 +70,6 @@ const MarketPostForm = () => {
         userId: user,
         publish: true,
       };
-
       await listingService.createMarketListing(marketData);
       navigate("/market");
     } catch (error) {

@@ -4,7 +4,7 @@ import { Phone, MapPin, CalendarClock, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import MarketImg from "../../../assets/img/market-item.png";
 
-const MarketDetailContent = ({ item }) => {
+const MarketDetailContent = ({ item, imageUrl }) => {
   const [currentImage, setCurrentImage] = useState(0);
 
   return (
@@ -31,11 +31,9 @@ const MarketDetailContent = ({ item }) => {
           <div className="mt-6">
             <h3 className="text-2xl font-semibold">Item Image</h3>
             <div className="mt-4">
-              <img
-                src={MarketImg}
-                alt="Market item"
-                className="w-full h-96 object-cover rounded-md"
-              />
+              {imageUrl && (
+                <img src={imageUrl} alt={item.title} className="mb-4" />
+              )}
             </div>
           </div>
 

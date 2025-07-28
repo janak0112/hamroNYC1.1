@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { Client, Databases } from "appwrite";
 import conf from "../../../conf/conf";
 import MarketDetailContent from "./MarketDetailContent";
+import { getImageUrl } from "../../../utils/uploadFile";
 
 const client = new Client()
   .setEndpoint(conf.appWriteUrl)
@@ -15,6 +16,7 @@ function MarketDetailPage() {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -25,6 +27,11 @@ function MarketDetailPage() {
           id
         );
         setItem(res);
+        // Assuming the image file ID is stored in `res.imageId`
+        if (res.imageIds) {
+          let url = getImageUrl(res.imageIds);
+          setImageUrl(url);
+        }
       } catch (err) {
         console.error("Error fetching item:", err);
         setError("Failed to load item.");
@@ -44,7 +51,7 @@ function MarketDetailPage() {
       </p>
     );
 
-  return <MarketDetailContent item={item} />;
+  return <MarketDetailContent item={item} imageUrl={imageUrl} />;
 }
 
 export default MarketDetailPage;
